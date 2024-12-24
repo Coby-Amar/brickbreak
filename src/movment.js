@@ -1,39 +1,39 @@
-import { getLeftLimit, getPaddleLeft, getPaddleRight, getRightLimit, getWindowCenterX } from "./UTILS"
+import { Box3, Vector3 } from "three"
+import { Sphere } from "three"
+import { GAME_BOARD } from "./state"
 
-let PaddleDirectionAndSpeed = 0
-
-export function onMouseMove(event, camera, paddle, RIGHT_WALL_X, LEFT_WALL_X) {
-    const mouseX = event.clientX - getWindowCenterX()
-    const currentPaddlePositionX = paddle.position.x + getWindowCenterX() + camera.position.x
-    const paddleRight = getPaddleRight(currentPaddlePositionX)
-    const paddleLeft = getPaddleLeft(currentPaddlePositionX)
-    console.log('currentPaddlePositionX', event.clientX)
-    console.log('mouseX: ', event.clientX)
-    console.log('paddle.position.distanceTo(camera.position): ', paddle.position.distanceTo(camera.position))
-    console.log('getWindowCenterX(): ', getWindowCenterX())
-    // if (mouseX > paddleRight) {
-    //     if (paddleRight >= getRightLimit(RIGHT_WALL_X)) {
-    //         PaddleDirectionAndSpeed = 0
-    //     } else {
-    //         PaddleDirectionAndSpeed = 0.5
-    //     }
-    // } else if (mouseX < paddleLeft) {
-    //     if (paddleLeft <= -getLeftLimit(LEFT_WALL_X)) {
-    //         PaddleDirectionAndSpeed = 0
-    //     } else {
-    //         PaddleDirectionAndSpeed = -0.5
-    //     }
-    // }
+export function movePaddle() {
+    const { paddle, paddleDirection, walls } = GAME_BOARD
+    const { left, right } = walls
+    const paddleBox = new Box3().setFromObject(paddle)
+    console.log('paddleBox.intersectsBox(left): ', paddleBox.intersectsBox(left))
+    if (paddleBox.intersectsBox(left) || paddleBox.intersectsBox(right)) {
+        console.log('intersectsBox')
+        GAME_BOARD.paddleDirection = 0
+    }
+    paddle.position.x += paddleDirection.x
 }
 
-export function movePaddle(paddle, RIGHT_WALL_X, LEFT_WALL_X) {
-    const currentPaddlePositionX = paddle.position.x
-    const isRight = PaddleDirectionAndSpeed > 0
-    if (isRight && getPaddleRight(currentPaddlePositionX) >= getRightLimit(RIGHT_WALL_X)) {
-        return
+export function moveBall() {
+    const { ball, ballResetPosition, ballState, paddle, walls } = GAME_BOARD
+
+    const ballBox = new Sphere(new Vector3(ball.position.x, ball.position.y, ball.position.z), 3)
+    const paddleBox = new Box3().setFromPoints(new Vector3(paddle.position.x, paddle.position.y, paddle.position.z))
+
+    const { top, left, right, limit } = walls
+    // if (ballBox.intersectsBox(limit)) {
+    //     ballState.reset()
+    //     ball.position.set(ballResetPosition.x, ballResetPosition.y, ballResetPosition.z)
+    //     paddle.position.x = 0
+    //     return true
+    // }
+    if (ballBox.intersectsBox(top) || ballBox.intersectsBox(paddleBox)) {
+        ballState.reverseY()
     }
-    if (!isRight && getPaddleLeft(currentPaddlePositionX) <= getLeftLimit(LEFT_WALL_X)) {
-        return
+    if (ballBox.intersectsBox(left) || ballBox.intersectsBox(right)) {
+        ballState.reverseX()
     }
-    paddle.position.x += PaddleDirectionAndSpeed
+    ball.position.x += ballState.x
+    ball.position.y += ballState.y
+    return false
 }
