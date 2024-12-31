@@ -2,3 +2,17 @@
   padding: 0;
   margin: 0;
 }
+
+#loading:has(canvas)~#app,
+#loading:has(canvas)~#info {
+  display: none;
+}
+
+#info {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 100;
+  display: block;
+}

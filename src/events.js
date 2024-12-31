@@ -1,44 +1,41 @@
-import { GAME_BOARD } from './state'
-import { LEFT_ARROW_CODE, RIGHT_ARROW_CODE, SPACE_CODE, TOP_WALL_HEIGHT } from './consts'
+import { LEFT_ARROW_CODE, RIGHT_ARROW_CODE, SPACE_CODE } from './consts'
+import { GameBoard } from './gameBoard'
 
-export function addEventListeners() {
-    window.addEventListener('keydown', ({ code }) => {
-        switch (code) {
-            case LEFT_ARROW_CODE:
-                GAME_BOARD.paddleDirection.x = -1
-                break
-            case RIGHT_ARROW_CODE:
-                GAME_BOARD.paddleDirection.x = 1
-                break
-            case SPACE_CODE:
-                GAME_BOARD.startGame = true
-                break
-            case 'KeyR':
-                GAME_BOARD.startGame = false
-                GAME_BOARD.ballState.reset()
-                const { x, y, z } = GAME_BOARD.ballResetPosition
-                GAME_BOARD.ball.position.set(x, y, z)
-                GAME_BOARD.paddle.position.x = 0
-                break
-            default:
-                break
-        }
-    })
+export class EventListeners {
+    static addEvents() {
+        window.addEventListener('keydown', ({ code }) => {
+            const paddleMovements = GameBoard.stage.paddleMovements
+            switch (code) {
+                case LEFT_ARROW_CODE:
+                    paddleMovements.setLeft()
+                    break
+                case RIGHT_ARROW_CODE:
+                    paddleMovements.setRight()
+                    break
+                case SPACE_CODE:
+                    GameBoard.startStage()
+                    break
+                case 'KeyR':
+                    GameBoard.resetStage()
+                    GameBoard.stage.ballMovements.reset()
+                    break
+                default:
+                    break
+            }
+        })
 
-    window.addEventListener('keyup', ({ code }) => {
-        switch (code) {
-            case LEFT_ARROW_CODE:
-            case RIGHT_ARROW_CODE:
-                GAME_BOARD.paddleDirection.x = 0
-                break
-            default:
-                break
-        }
-    })
+        window.addEventListener('keyup', ({ code }) => {
+            switch (code) {
+                case LEFT_ARROW_CODE:
+                case RIGHT_ARROW_CODE:
+                    GameBoard.stage.paddleMovements.reset()
+                    break
+                default:
+                    break
+            }
+        })
 
-    window.addEventListener('resize', () => {
-        GAME_BOARD.camera.aspect = window.innerWidth / (window.innerHeight - TOP_WALL_HEIGHT)
-        GAME_BOARD.camera.updateProjectionMatrix()
-        GAME_BOARD.renderer.setSize(window.innerWidth, window.innerHeight)
-    }, true)
+        window.addEventListener('resize', () => GameBoard.resize())
+
+    }
 }
